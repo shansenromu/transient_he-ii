@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-whitegrid')
 
-qdots = [.01,.05,.075,.1,.15,.2,.25,.5] # W
+qdots = [.01,.05,.075,.1,.15,.2,.25] # W
 
 qdot = .05 # W
 capthex = 1. # K
@@ -14,7 +14,7 @@ v = 8./1000. # m^3 -- volume of He-II bottle
 c = 100. # J/(kg*K) -- specific heat capacity
 m = 3. # dimensionless -- the GM exponent
 
-dx = 0.008 # m -- "length" of channel (hole)
+dx = 0.01 # m -- "length" of channel (hole)
 ftinv = 377028198.7 # W3/(m5*K) -- conductivity function at 1 K
 ahole = dx*dx # m^2 -- effective area of hole
 
@@ -46,6 +46,7 @@ for qdot in qdots:
     plt.plot(ts,capts,label='%4.3f W'%qdot)
 
     captend[iq]=capt
+    captendthy[iq]=capthex+qdot**3/k
     iq=iq+1
 
 plt.xlabel('Time (s)')
@@ -54,10 +55,11 @@ plt.legend()
 
 #for qdot in qdots:
 fig2=plt.figure()
-plt.plot(qdots,captend)
-plt.plot(qdots,captendthy)
-plt.yscale('log')
-plt.xscale('log')
+plt.plot(qdots,captend,label='after 1000 s')
+plt.plot(qdots,captendthy,label='at infinity')
+#plt.yscale('log')
+#plt.xscale('log')
 plt.xlabel('Power (W)')
-plt.ylabel('Temperature after 1000 s (K)')
+plt.ylabel('Final Temperature (K)')
+plt.legend()
 plt.show()
