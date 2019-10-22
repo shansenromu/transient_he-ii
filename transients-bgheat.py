@@ -10,7 +10,7 @@ qdot_bg = .25 # W
 
 capthex = 1. # K
 rho = 145. # kg/m^3 -- density of He-II at ~1 K
-v = 3*8./1000. # m^3 -- volume of He-II bottle
+v = 8./1000. # m^3 -- volume of He-II bottle
 c = 100. # J/(kg*K) -- specific heat capacity
 m = 3. # dimensionless -- the GM exponent
 
