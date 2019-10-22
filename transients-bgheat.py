@@ -1,19 +1,22 @@
 #!/usr/bin/python
-
+from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-whitegrid')
 
-qdots = [.01,.05,.075,.1,.15,.2,.25] # W
+qdots = [0.,.025,.05,.075,.1,.15,.2,.25] # W
 
-qdot_bg = .15 # W
+qdot_bg = .25 # W
 
-qdot = .05 # W
 capthex = 1. # K
 rho = 145. # kg/m^3 -- density of He-II at ~1 K
-v = 8./1000. # m^3 -- volume of He-II bottle
+v = 3*8./1000. # m^3 -- volume of He-II bottle
 c = 100. # J/(kg*K) -- specific heat capacity
 m = 3. # dimensionless -- the GM exponent
+
+
+def func(t,a,b,c):
+    return a*np.exp(-t/b)+c
 
 def ftinv_sciver(capt):
     t_lambda=2.17 # K
@@ -25,14 +28,15 @@ def ftinv_sciver(capt):
     g_lambda=rho**2*s_lambda**4*t_lambda**3/A_lambda # W^3/(K m^5)
     return g_lambda*multiplier
 
-dx = 0.01 # m -- "length" of channel (hole)
-ahole = dx*dx # m^2 -- effective area of hole
+dx = 0.005 # m -- "length" of channel (hole)
+dy = 0.005 # m -- side length of hole area
+ahole = dy*dy # m^2 -- effective area of hole
 
 
 # First, calculate starting temperature by assuming it has equilibrated.
 
-ftinv_integral=0
-ftinv_goal=dx*(qdot_bg/ahole)**3
+ftinv_integral=0.
+ftinv_goal=dx*(qdot_bg/ahole)**m
 captprime=capthex
 deltacaptstep=0.0001
 while (ftinv_integral<ftinv_goal):
@@ -40,6 +44,7 @@ while (ftinv_integral<ftinv_goal):
     captprime=captprime+deltacaptstep
 captstart=captprime
 print('Starting temperature is %f'%captstart)
+print(ftinv_goal)
 
 dt = .01 # s time step
 nsteps = 100000
@@ -56,7 +61,7 @@ for qdot in qdots:
     ts = np.empty(nsteps)
     capts = np.empty(nsteps)
 
-    ftinv_integral=0.
+    ftinv_integral=dx*((qdot_bg)/ahole)**m
     for i in np.arange(nsteps):
         ts[i]=t
         capts[i]=capt
@@ -68,14 +73,20 @@ for qdot in qdots:
 
     plt.plot(ts,capts,label='%4.3f W'%qdot)
 
+    # fit curve
+    popt,pcov=curve_fit(func,ts,capts)
+    print(qdot)
+    print(popt)
+    plt.plot(ts,func(ts,*popt),'r-',label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+    
     captend[iq]=capt
 
     # Calculate theoretical balance of qdot and ftinv integral
 
-    ftinv_integral=0
-    ftinv_goal=dx*((qdot+qdot_bg)/ahole)**3
+    ftinv_integral=dx*((qdot_bg)/ahole)**m
+    ftinv_goal=dx*((qdot+qdot_bg)/ahole)**m
     captprime=captstart
-    deltacaptstep=0.001
+    deltacaptstep=0.0001
     while (ftinv_integral<ftinv_goal):
         ftinv_integral=ftinv_integral+deltacaptstep*ftinv_sciver(captprime)
         captprime=captprime+deltacaptstep
