@@ -6,17 +6,24 @@ plt.style.use('seaborn-whitegrid')
 
 qdots = [0.,.025,.05,.075,.1,.15,.2,.25] # W
 
-qdot_bg = .25 # W
+qdot_bg = .15 # W
 
-capthex = 1. # K
+capthex = .9 # K
 rho = 145. # kg/m^3 -- density of He-II at ~1 K
 v = 8./1000. # m^3 -- volume of He-II bottle
-c = 100. # J/(kg*K) -- specific heat capacity
 m = 3. # dimensionless -- the GM exponent
-
 
 def func(t,a,b,c):
     return a*np.exp(-t/b)+c
+
+def c(t): # J/(kg*K)
+    #return 100. # previous model
+    if (t<=.6):
+        return 20.4*t**3 # van Sciver Eq. (6.28)
+    elif (t<1.1):
+        return 108.*t**6.7 # van Sciver Eq. (6.29a)
+    else:
+        return 117.*t**5.6 # van Sciver Eq. (6.29b)
 
 def ftinv_sciver(capt):
     t_lambda=2.17 # K
@@ -65,7 +72,7 @@ for qdot in qdots:
     for i in np.arange(nsteps):
         ts[i]=t
         capts[i]=capt
-        dcapt=dt*(qdot+qdot_bg-ahole*(ftinv_integral/dx)**(1/m))/(rho*v*c)
+        dcapt=dt*(qdot+qdot_bg-ahole*(ftinv_integral/dx)**(1/m))/(rho*v*c(capt))
         t=t+dt
         capt=capt+dcapt
         ftinv_integral=ftinv_integral+dcapt*ftinv_sciver(capt)
