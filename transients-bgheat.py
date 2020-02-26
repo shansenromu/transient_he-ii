@@ -4,26 +4,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-whitegrid')
 
-qdots = [0.,.025,.05,.075,.1,.15,.2,.25] # W
+qdots = [0.,.010,.025,.050,.075,.100,.150,.200,.250] # W
 
-qdot_bg = .15 # W
+qdot_bg = 0.15 # W
 
-capthex = .9 # K
+capthex = 1.0 # K
 rho = 145. # kg/m^3 -- density of He-II at ~1 K
-v = 8./1000. # m^3 -- volume of He-II bottle
+v = 8.5/1000. # m^3 -- volume of He-II bottle
 m = 3. # dimensionless -- the GM exponent
+
+dx = 0.01 # m -- "length" of channel (hole)
+dy = dx # m -- side length of hole area
+ahole = dy*dy # m^2 -- effective area of hole
 
 def func(t,a,b,c):
     return a*np.exp(-t/b)+c
 
-def c(t): # J/(kg*K)
+def c(capt): # J/(kg*K)
     #return 100. # previous model
-    if (t<=.6):
-        return 20.4*t**3 # van Sciver Eq. (6.28)
-    elif (t<1.1):
-        return 108.*t**6.7 # van Sciver Eq. (6.29a)
+    if (capt<=.6):
+        return 20.4*capt**3 # van Sciver Eq. (6.28)
+    elif (capt<1.1):
+        return 108.*capt**6.7 # van Sciver Eq. (6.29a)
     else:
-        return 117.*t**5.6 # van Sciver Eq. (6.29b)
+        return 117.*capt**5.6 # van Sciver Eq. (6.29b)
 
 def ftinv_sciver(capt):
     t_lambda=2.17 # K
@@ -34,10 +38,6 @@ def ftinv_sciver(capt):
     rho=145. # kg/m^3
     g_lambda=rho**2*s_lambda**4*t_lambda**3/A_lambda # W^3/(K m^5)
     return g_lambda*multiplier
-
-dx = 0.005 # m -- "length" of channel (hole)
-dy = 0.005 # m -- side length of hole area
-ahole = dy*dy # m^2 -- effective area of hole
 
 
 # First, calculate starting temperature by assuming it has equilibrated.
@@ -84,7 +84,7 @@ for qdot in qdots:
     popt,pcov=curve_fit(func,ts,capts)
     print(qdot)
     print(popt)
-    plt.plot(ts,func(ts,*popt),'r-',label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+    #plt.plot(ts,func(ts,*popt),'r-',label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
     
     captend[iq]=capt
 
